@@ -1,23 +1,61 @@
 {
   "name": "mcp-google-business",
-  "version": "0.0.1",
-  "description": "MCP server for Google Business Profile — locations, reviews, posts and performance metrics. For Claude, Cursor, Codex and other AI clients.",
-  "keywords": ["mcp", "model-context-protocol", "google", "google-business-profile", "google-my-business", "local-seo", "reviews", "claude", "cursor", "codex"],
-  "homepage": "https://github.com/A1-x-Tech/mcp-google-business#readme",
+  "version": "0.1.0",
+  "description": "MCP server for Google Business Profile — locations, reviews, local posts and performance metrics for AI agents (Claude, Cursor, Codex and others).",
+  "mcpName": "io.github.A1-x-Tech/mcp-google-business",
+  "type": "module",
+  "bin": {
+    "mcp-google-business": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "test"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "smoke": "node --import tsx src/smoke.ts",
+    "test": "npm run test:src && npm run test:dist",
+    "test:src": "node --import tsx --test $(find src -name '*.test.ts')",
+    "test:dist": "npm run build && node --test test/dist-smoke.test.js",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "google",
+    "google-business-profile",
+    "google-my-business",
+    "local-seo",
+    "reviews",
+    "local-posts",
+    "claude",
+    "cursor",
+    "codex"
+  ],
+  "license": "MIT",
+  "author": "gistrec <gistrec@gmail.com>",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/A1-x-Tech/mcp-google-business.git"
   },
-  "license": "MIT",
-  "author": "gistrec <gistrec@gmail.com>",
-  "type": "module",
-  "bin": {
-    "mcp-google-business": "index.js"
+  "homepage": "https://github.com/A1-x-Tech/mcp-google-business#readme",
+  "bugs": {
+    "url": "https://github.com/A1-x-Tech/mcp-google-business/issues"
   },
-  "files": [
-    "index.js"
-  ],
-  "engines": {
-    "node": ">=18"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "tsx": "^4.22.4",
+    "typescript": "^5.7.0"
   }
 }

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.A1-x-Tech/mcp-google-business",
+  "title": "Google Business Profile MCP",
+  "description": "MCP server for Google Business Profile: locations, reviews, local posts and performance metrics.",
+  "websiteUrl": "https://github.com/A1-x-Tech/mcp-google-business#readme",
+  "repository": {
+    "url": "https://github.com/A1-x-Tech/mcp-google-business",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "mcp-google-business",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "GOOGLE_BUSINESS_CLIENT_ID",
+          "description": "OAuth2 client id from Google Cloud Console (refresh flow).",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "GOOGLE_BUSINESS_CLIENT_SECRET",
+          "description": "OAuth2 client secret. Treat it as a secret.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "GOOGLE_BUSINESS_REFRESH_TOKEN",
+          "description": "OAuth2 refresh token with the business.manage scope. Treat it as a secret.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "GOOGLE_BUSINESS_ACCESS_TOKEN",
+          "description": "Ready-made access token (~1 h) as an alternative to the refresh-flow trio above.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "GOOGLE_BUSINESS_TIMEOUT_MS",
+          "description": "Per-request timeout in milliseconds.",
+          "isRequired": false,
+          "default": "60000"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_MAX_RETRIES",
+          "description": "Retries on transient errors (429 always; 5xx/network on idempotent calls).",
+          "isRequired": false,
+          "default": "3"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_ACCOUNTS_API_BASE",
+          "description": "Account Management API base override.",
+          "isRequired": false,
+          "default": "https://mybusinessaccountmanagement.googleapis.com"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_INFO_API_BASE",
+          "description": "Business Information API base override.",
+          "isRequired": false,
+          "default": "https://mybusinessbusinessinformation.googleapis.com"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_PERFORMANCE_API_BASE",
+          "description": "Business Profile Performance API base override.",
+          "isRequired": false,
+          "default": "https://businessprofileperformance.googleapis.com"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_V4_API_BASE",
+          "description": "Legacy v4 My Business API base override (reviews, local posts).",
+          "isRequired": false,
+          "default": "https://mybusiness.googleapis.com"
+        }
+      ]
+    }
+  ]
+}
