@@ -1,0 +1,40 @@
+name: Health check
+
+# End-to-end read-only check against the live Google Business Profile APIs. Auth is the
+# OAuth2 refresh trio stored as repo secrets — no per-run minting. smoke makes NO writes
+# (lists the accessible accounts). Runs daily + manual dispatch only (never on push/PR), so
+# secrets aren't exposed to PRs/forks. The smoke step is SKIPPED when the secrets are not
+# configured, so forks and the pre-credentials period stay green.
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    if: github.repository == 'A1-x-Tech/mcp-google-business'
+    env:
+      GOOGLE_BUSINESS_CLIENT_ID: ${{ secrets.GOOGLE_BUSINESS_CLIENT_ID }}
+      GOOGLE_BUSINESS_CLIENT_SECRET: ${{ secrets.GOOGLE_BUSINESS_CLIENT_SECRET }}
+      GOOGLE_BUSINESS_REFRESH_TOKEN: ${{ secrets.GOOGLE_BUSINESS_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+      - run: npm ci
+      - name: Read-only smoke check
+        if: env.GOOGLE_BUSINESS_REFRESH_TOKEN != ''
+        run: npm run smoke
+      - name: Skipped (no credentials configured)
+        if: env.GOOGLE_BUSINESS_REFRESH_TOKEN == ''
+        run: echo "GOOGLE_BUSINESS_* secrets are not set — live smoke skipped."
