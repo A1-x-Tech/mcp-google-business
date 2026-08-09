@@ -1,0 +1,23 @@
+{
+  "name": "mcp-google-business",
+  "version": "0.0.1",
+  "description": "MCP server for Google Business Profile — locations, reviews, posts and performance metrics. For Claude, Cursor, Codex and other AI clients.",
+  "keywords": ["mcp", "model-context-protocol", "google", "google-business-profile", "google-my-business", "local-seo", "reviews", "claude", "cursor", "codex"],
+  "homepage": "https://github.com/A1-x-Tech/mcp-google-business#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/A1-x-Tech/mcp-google-business.git"
+  },
+  "license": "MIT",
+  "author": "gistrec <gistrec@gmail.com>",
+  "type": "module",
+  "bin": {
+    "mcp-google-business": "index.js"
+  },
+  "files": [
+    "index.js"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
