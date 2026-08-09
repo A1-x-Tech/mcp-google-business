@@ -24,7 +24,7 @@ click through in the Business Profile Manager.
      -e GOOGLE_BUSINESS_CLIENT_ID=your_client_id \
      -e GOOGLE_BUSINESS_CLIENT_SECRET=your_client_secret \
      -e GOOGLE_BUSINESS_REFRESH_TOKEN=your_refresh_token \
-     -- npx -y mcp-google-business
+     -- npx -y mcp-google-business@latest
    ```
 
 3. Ask the assistant: *"List my business locations and show the newest unanswered reviews."*
@@ -85,7 +85,7 @@ claude mcp add google-business \
   -e GOOGLE_BUSINESS_CLIENT_ID=your_client_id \
   -e GOOGLE_BUSINESS_CLIENT_SECRET=your_client_secret \
   -e GOOGLE_BUSINESS_REFRESH_TOKEN=your_refresh_token \
-  -- npx -y mcp-google-business
+  -- npx -y mcp-google-business@latest
 ```
 
 </details>
@@ -100,7 +100,7 @@ claude mcp add google-business \
   "mcpServers": {
     "google-business": {
       "command": "npx",
-      "args": ["-y", "mcp-google-business"],
+      "args": ["-y", "mcp-google-business@latest"],
       "env": {
         "GOOGLE_BUSINESS_CLIENT_ID": "your_client_id",
         "GOOGLE_BUSINESS_CLIENT_SECRET": "your_client_secret",
@@ -123,7 +123,7 @@ claude mcp add google-business \
   "mcpServers": {
     "google-business": {
       "command": "npx",
-      "args": ["-y", "mcp-google-business"],
+      "args": ["-y", "mcp-google-business@latest"],
       "env": {
         "GOOGLE_BUSINESS_CLIENT_ID": "your_client_id",
         "GOOGLE_BUSINESS_CLIENT_SECRET": "your_client_secret",
@@ -147,7 +147,7 @@ claude mcp add google-business \
     "google-business": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "mcp-google-business"],
+      "args": ["-y", "mcp-google-business@latest"],
       "env": {
         "GOOGLE_BUSINESS_CLIENT_ID": "your_client_id",
         "GOOGLE_BUSINESS_CLIENT_SECRET": "your_client_secret",
