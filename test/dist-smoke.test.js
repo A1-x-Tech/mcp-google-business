@@ -67,6 +67,19 @@ test("dist binary completes the MCP handshake over stdio and lists all tools", a
   }
 });
 
+test("dist binary reports server instructions in the initialize result", async () => {
+  const client = await connectDist();
+  try {
+    // The instructions are the only prose the calling model gets before it picks
+    // a tool — they must survive the build and reach the handshake.
+    const instructions = client.getInstructions();
+    assert.ok(instructions && instructions.trim().length > 0, "initialize must carry non-empty instructions");
+    assert.match(instructions, /Business Profile/);
+  } finally {
+    await client.close();
+  }
+});
+
 test("dist binary serves a tools/call end to end (SSRF guard, no network needed)", async () => {
   const client = await connectDist();
   try {

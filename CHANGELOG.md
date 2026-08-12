@@ -7,6 +7,15 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-08-12
+
+### Added
+
+- Server instructions. The MCP `initialize` response now carries a short briefing for the calling
+  model: what this API is and is not, what it cannot do, and the quotas, retry rules and misleading
+  failures that should change how it is used. That knowledge previously lived only in the README,
+  which a model never reads.
+
 ## [1.0.0] — 2026-08-11
 
 ### Changed
@@ -44,6 +53,7 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   plus a dist smoke test doing a real MCP handshake with the built binary over stdio.
 - CI (Node 20/22) and a daily read-only health check (skips when secrets are absent).
 
-[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.1
 [1.0.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.0
 [0.1.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v0.1.0

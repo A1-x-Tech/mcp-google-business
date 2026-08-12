@@ -1,6 +1,6 @@
 {
   "name": "mcp-google-business",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Google Business Profile — locations, reviews, local posts and performance metrics for AI agents (Claude, Cursor, Codex and others).",
   "mcpName": "io.github.A1-x-Tech/mcp-google-business",
   "type": "module",

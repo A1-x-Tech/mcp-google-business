@@ -13,6 +13,27 @@ import { registerReviewTools } from "./tools/reviews.js";
 import { registerPostTools } from "./tools/posts.js";
 import { registerRawTool } from "./tools/raw.js";
 
+/**
+ * Server instructions: the `initialize` result's prose, and the only text the
+ * calling model reads before it picks a tool. It carries what the tool list
+ * cannot — what this API is (and is not), the quota that makes every call fail,
+ * where writes are irreversible, and what simply has no tool here. Keep it
+ * dense; it is prepended to every session's context.
+ */
+const INSTRUCTIONS =
+  "Google Business Profile (formerly Google My Business) manages the Search and Maps listings the " +
+  "authenticated Google account owns or manages: profile fields, reviews, local posts and metrics. " +
+  "It is not Google Ads, and a listing the account does not manage is unreachable — only profiles " +
+  "under the accounts list_accounts returns exist here. Creating or verifying a location and " +
+  "managing profile photos have no dedicated tool: raw_request is the only route. If every call " +
+  "fails with a 429/403 quota error you are not sending too many requests: Business Profile APIs " +
+  "ship with a default quota of 0 QPM until Google approves the project's Application for Basic API " +
+  "Access (approved projects get 300 QPM per API), and writes additionally share a hard, " +
+  "non-raisable cap of 10 edits per minute per profile. An empty account list means the " +
+  "credentials' Google account manages no profile rather than a bad token. Writes are public and " +
+  "there is no undo: reply_to_review overwrites an existing reply without warning, deletions are " +
+  "final, and update_location's validateOnly is the only dry run available.";
+
 /** Reads the package version so the server reports its real version to MCP clients. */
 function readVersion(): string {
   try {
@@ -48,10 +69,13 @@ async function main(): Promise<void> {
   const config = await loadConfigOrExit(telemetry);
   const client = new GoogleBusinessClient(config);
 
-  const server = new McpServer({
-    name: "mcp-google-business",
-    version: readVersion(),
-  });
+  const server = new McpServer(
+    {
+      name: "mcp-google-business",
+      version: readVersion(),
+    },
+    { instructions: INSTRUCTIONS },
+  );
 
   instrumentToolCalls(server, telemetry);
   server.server.oninitialized = () => {
