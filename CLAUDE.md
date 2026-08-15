@@ -30,8 +30,8 @@ npm run smoke      # live READ-ONLY call (needs real credentials)
   (`accounts`/`businessinfo`/`performance`/`v4`), the OAuth2 token refresh with caching and
   in-flight dedupe, resource-name building (`bareAccountId`/`bareLocationId` accept bare ids
   and full names), the default `readMask` injection, flattened
-  `dailyRange.*`/`monthlyRange.*` query params, retries (429 always; 5xx/network only for
-  non-POST), the AbortController timeout that also covers reading the body, the SSRF origin
+  `dailyRange.*`/`monthlyRange.*` query params, retries (429/quota-403 always; 5xx/network only
+  for non-POST), the AbortController timeout that also covers reading the body, the SSRF origin
   guard and `GoogleBusinessError(status, body)` with the quota-0 hint.
 - `src/tools/*.ts` — one module per API group: `accounts` (1 tool), `locations` (7),
   `performance` (3), `reviews` (4), `posts` (4), `raw` (1) = 20 tools. `src/tools/util.ts` —
