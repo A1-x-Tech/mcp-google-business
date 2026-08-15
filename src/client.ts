@@ -1,5 +1,5 @@
 import type { ApiService, GoogleBusinessConfig } from "./types.js";
-import { GoogleBusinessError } from "./types.js";
+import { GoogleBusinessError, isQuotaError } from "./types.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -271,10 +271,11 @@ export class GoogleBusinessClient {
   /**
    * Low-level request to one of the four Google Business Profile hosts. `service`
    * picks the host; `path` is relative to it (e.g. "v1/accounts" or
-   * "v4/accounts/1/locations/2/reviews"). Retries 429 always; 5xx and network
-   * errors/timeouts only for idempotent methods (everything except POST — a 502
-   * after a committed POST would duplicate the created resource). Any other
-   * non-2xx throws a {@link GoogleBusinessError}.
+   * "v4/accounts/1/locations/2/reviews"). Retries rate limits — 429 and the
+   * legacy-v4 quota-403 — for every method (the request was never executed);
+   * 5xx and network errors/timeouts only for idempotent methods (everything
+   * except POST — a 502 after a committed POST would duplicate the created
+   * resource). Any other non-2xx throws a {@link GoogleBusinessError}.
    */
   async request<T = unknown>(
     service: ApiService,
@@ -317,13 +318,16 @@ export class GoogleBusinessClient {
         throw err;
       }
 
-      const transient = res.status === 429 || (idempotent && res.status >= 500 && res.status < 600);
+      const data = parseBody(text);
+      // 429 and quota-403 mean "not executed, slow down" — retryable for every
+      // method. 5xx is retried only for idempotent methods.
+      const rateLimited = res.status === 429 || (res.status === 403 && isQuotaError(data));
+      const transient = rateLimited || (idempotent && res.status >= 500 && res.status < 600);
       if (transient && attempt < this.maxRetries) {
         await delay(this.backoffMs(attempt, res));
         continue;
       }
 
-      const data = parseBody(text);
       if (!res.ok) throw new GoogleBusinessError(res.status, data);
       return data as T;
     }

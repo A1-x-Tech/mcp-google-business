@@ -411,6 +411,42 @@ test("request() retries a 429 then returns the result", async () => {
   }
 });
 
+test("request() retries a legacy-v4 quota-403 even for a POST; a permissions 403 never", async () => {
+  let n = 0;
+  const mock = mockFetch(() => {
+    n++;
+    if (n === 1) {
+      return new Response(
+        JSON.stringify({ error: { code: 403, message: "Rate Limit Exceeded", errors: [{ reason: "rateLimitExceeded" }] } }),
+        { status: 403 },
+      );
+    }
+    return okJson();
+  });
+  try {
+    const result = await makeClient({ maxRetries: 2 }).createLocalPost({ accountId: "1", locationId: "2", post: {} });
+    assert.deepEqual(result, { ok: true });
+    assert.equal(n, 2, "a quota-403 was never executed — safe to replay even a POST");
+  } finally {
+    mock.restore();
+  }
+
+  n = 0;
+  const mock2 = mockFetch(() => {
+    n++;
+    return new Response(
+      JSON.stringify({ error: { code: 403, message: "The caller does not have permission", status: "PERMISSION_DENIED" } }),
+      { status: 403 },
+    );
+  });
+  try {
+    await assert.rejects(() => makeClient({ maxRetries: 2 }).listAccounts(), /HTTP 403/);
+    assert.equal(n, 1, "a permissions 403 is not transient");
+  } finally {
+    mock2.restore();
+  }
+});
+
 test("request() retries a 5xx on idempotent methods only — a POST is never replayed", async () => {
   let n = 0;
   const mock = mockFetch(() => {

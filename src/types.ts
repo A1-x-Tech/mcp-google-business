@@ -31,7 +31,7 @@ export interface GoogleBusinessConfig {
   apiBases: Record<ApiService, string>;
   /** Per-request timeout in milliseconds. Defaults to 60_000. */
   timeoutMs?: number;
-  /** Max retries for transient errors (429; 5xx/network only on idempotent calls). Defaults to 3. */
+  /** Max retries for transient errors (429/quota-403; 5xx/network only on idempotent calls). Defaults to 3. */
   maxRetries?: number;
   /** Base backoff in milliseconds, doubled each retry. Defaults to 500. */
   retryBaseMs?: number;
@@ -81,14 +81,24 @@ function formatErrorBody(body: unknown): string {
 }
 
 /**
+ * True when a 403 body is a quota/rate-limit rejection (the request was never
+ * executed) rather than a permissions problem. The v1 hosts report quota
+ * overruns as 429 RESOURCE_EXHAUSTED, but the legacy v4 host still uses the
+ * old googleapis style: 403 rateLimitExceeded. The client retries these for
+ * every method; quotaHint appends the access-form pointer to them.
+ */
+export function isQuotaError(body: unknown): boolean {
+  const text = typeof body === "string" ? body : JSON.stringify(body ?? "");
+  return /rateLimitExceeded|RESOURCE_EXHAUSTED|quota/i.test(text);
+}
+
+/**
  * Appends the "project not approved?" diagnostic to quota errors. Unapproved
  * projects have 0 QPM and surface it as 429 RESOURCE_EXHAUSTED (sometimes 403
  * rateLimitExceeded) on every single call.
  */
 function quotaHint(status: number, body: unknown): string {
-  const text = typeof body === "string" ? body : JSON.stringify(body ?? "");
-  const rateLimited =
-    status === 429 || (status === 403 && /rateLimitExceeded|RESOURCE_EXHAUSTED|quota/i.test(text));
+  const rateLimited = status === 429 || (status === 403 && isQuotaError(body));
   if (!rateLimited) return "";
   return (
     " — if every call fails like this, your Google Cloud project probably has the default 0 QPM quota:" +

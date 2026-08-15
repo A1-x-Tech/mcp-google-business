@@ -24,8 +24,10 @@ const INSTRUCTIONS =
   "Google Business Profile (formerly Google My Business) manages the Search and Maps listings the " +
   "authenticated Google account owns or manages: profile fields, reviews, local posts and metrics. " +
   "It is not Google Ads, and a listing the account does not manage is unreachable — only profiles " +
-  "under the accounts list_accounts returns exist here. Creating or verifying a location and " +
-  "managing profile photos have no dedicated tool: raw_request is the only route. If every call " +
+  "under the accounts list_accounts returns exist here. Creating a location and managing profile " +
+  "photos have no dedicated tool: raw_request is the only route; verifying a location is not " +
+  "possible at all (the Verifications API lives on a separate host this server cannot reach). " +
+  "If every call " +
   "fails with a 429/403 quota error you are not sending too many requests: Business Profile APIs " +
   "ship with a default quota of 0 QPM until Google approves the project's Application for Basic API " +
   "Access (approved projects get 300 QPM per API), and writes additionally share a hard, " +
