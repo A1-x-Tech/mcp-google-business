@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { bareAccountId, bareLocationId, GoogleBusinessClient } from "./client.js";
+import { CredentialsError, MISSING_CREDENTIALS_MESSAGE } from "./config.js";
 import type { GoogleBusinessConfig } from "./types.js";
 
 const BASES = {
@@ -65,6 +66,40 @@ test("bare id helpers accept bare ids, single names and full v4 names", () => {
 });
 
 // ---------- OAuth2 ----------
+
+/**
+ * The degraded-start contract: a server without credentials still runs, so the
+ * client must fail the call itself — with the exact actionable message, before
+ * any fetch. Zero fetch calls proves the error skips the retry/backoff loop
+ * and the token mint alike (maxRetries is deliberately non-zero here).
+ */
+test("no credentials at all: CredentialsError with the exact text, fetch never called", async () => {
+  const mock = mockFetch(() => okJson());
+  try {
+    const client = new GoogleBusinessClient({ apiBases: { ...BASES }, maxRetries: 3, retryBaseMs: 0 });
+    await assert.rejects(
+      () => client.listAccounts(),
+      (err: unknown) => {
+        assert.ok(err instanceof CredentialsError, "must be a CredentialsError");
+        assert.equal(err.message, MISSING_CREDENTIALS_MESSAGE);
+        // The historical startup error, verbatim — the message is the product.
+        assert.ok(
+          err.message.startsWith(
+            "Google Business credentials are required: set GOOGLE_BUSINESS_CLIENT_ID, " +
+              "GOOGLE_BUSINESS_CLIENT_SECRET and GOOGLE_BUSINESS_REFRESH_TOKEN (OAuth2 refresh flow), " +
+              "or GOOGLE_BUSINESS_ACCESS_TOKEN for a short-lived token.",
+          ),
+          "the message must open with the historical startup error, verbatim",
+        );
+        assert.match(err.message, /restart the server/, "the fix must mention the restart");
+        return true;
+      },
+    );
+    assert.equal(mock.calls.length, 0, "must not fetch at all — no retries, no token mint");
+  } finally {
+    mock.restore();
+  }
+});
 
 test("refresh flow: mints a token at the Google token endpoint, then caches it", async () => {
   const mock = mockFetch((url) => {

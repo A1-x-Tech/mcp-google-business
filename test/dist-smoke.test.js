@@ -119,6 +119,50 @@ test("dist client rejects foreign-origin paths before sending the Bearer token",
   }
 });
 
+/**
+ * The degraded-start contract: without any credentials the binary used to
+ * exit(1) before the handshake, leaving the client a dead server and no reason.
+ * It must now start, list every tool, open the instructions with the fix, and
+ * answer a tool call with the actionable error — offline: the CredentialsError
+ * fires before any fetch, so this test never touches the network.
+ */
+test("dist binary starts without credentials: handshake, tool list, actionable call error", async () => {
+  const env = {};
+  for (const [k, v] of Object.entries(process.env)) {
+    if (v !== undefined && !k.startsWith("GOOGLE_BUSINESS_")) env[k] = v;
+  }
+  env.ASKADS_TELEMETRY = "0"; // keep the suite offline
+
+  const transport = new StdioClientTransport({
+    command: process.execPath,
+    args: ["dist/index.js"],
+    cwd: ROOT,
+    env,
+    stderr: "ignore",
+  });
+  const client = new Client({ name: "dist-smoke-unconfigured", version: "0.0.0" });
+  await client.connect(transport);
+  try {
+    // The model must read the fix before it picks a tool.
+    const instructions = client.getInstructions() ?? "";
+    assert.match(instructions, /not connected/);
+    assert.match(instructions, /GOOGLE_BUSINESS_CLIENT_ID/);
+    assert.match(instructions, /restart/);
+
+    const { tools } = await client.listTools();
+    assert.deepEqual(tools.map((t) => t.name).sort(), ALL_TOOLS);
+
+    // A tool call fails with the exact message instead of killing the server.
+    const result = await client.callTool({ name: "list_accounts", arguments: {} });
+    assert.equal(result.isError, true);
+    const text = result.content.map((c) => c.text ?? "").join(" ");
+    assert.match(text, /Google Business credentials are required: set GOOGLE_BUSINESS_CLIENT_ID/);
+    assert.match(text, /restart the server/);
+  } finally {
+    await client.close();
+  }
+});
+
 test("dist client always sends a readMask on location reads (400 without it)", async () => {
   const original = globalThis.fetch;
   const urls = [];

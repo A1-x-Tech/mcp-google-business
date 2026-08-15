@@ -56,13 +56,18 @@ export interface ClientInfo {
 }
 
 /**
- * `server_start` fires after the MCP handshake, `tool_call` per invocation and
- * `startup_failed` when the process dies on missing credentials — the only
- * signal that someone installed the server but never got credentials in.
+ * `server_start` fires after the MCP handshake of a configured install and
+ * `tool_call` per invocation. `startup_failed` predates the degraded-start flow
+ * and still means "config unusable at load" (now: a malformed setup such as a
+ * partial OAuth trio); it is kept unchanged so the historical funnel stays
+ * comparable. `unconfigured_start` is its live counterpart — the server now
+ * survives missing credentials and completes the handshake, so this is the
+ * first event that can carry the client's name for an install with no
+ * credentials yet.
  */
-export type TelemetryEvent = "server_start" | "tool_call" | "startup_failed";
+export type TelemetryEvent = "server_start" | "tool_call" | "startup_failed" | "unconfigured_start";
 
-/** `tool` rides with tool_call, `reason` with startup_failed. */
+/** `tool` rides with tool_call, `reason` with startup_failed/unconfigured_start. */
 export interface EventFields {
   tool?: string;
   reason?: string;
@@ -91,9 +96,9 @@ export class Telemetry {
   }
 
   /**
-   * The same ping, awaited. Only for the startup_failed path: that caller
-   * calls process.exit() immediately after, which would kill an in-flight
-   * fire-and-forget request before it ever left the machine.
+   * The same ping, awaited. Only for a caller that exits right after — a
+   * fire-and-forget request would die in flight with the process. No startup
+   * path needs it anymore (a config problem degrades instead of exiting).
    */
   async sendBlocking(event: TelemetryEvent, fields: EventFields = {}): Promise<void> {
     await this.post(event, fields);
