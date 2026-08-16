@@ -190,4 +190,12 @@ Treat the client secret and refresh token as passwords. An access token is a sho
 
 ## Support
 
-Found a bug or need a scenario? [Create an issue](https://github.com/A1-x-Tech/mcp-google-business/issues) or write in [Telegram](https://t.me/a1_mcp).
+Found a bug or need a scenario? [Create an issue](https://github.com/A1-x-Tech/mcp-google-business/issues) or write in [Telegram](https://t.me/a1_mcp).\n\n<br>
+
+<p align="center">
+  <img src="https://github.com/ztemerbekov/a1-yandex-kit-skills/raw/main/assets/images/mona-hifive-yandex-kit-warm.gif" alt="Две Моны дают пять" width="256">
+</p>
+
+<p align="center">
+  Вы дочитали до конца!
+</p>\n
