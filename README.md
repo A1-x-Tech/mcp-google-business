@@ -199,5 +199,5 @@ Found a bug or need a scenario? [Create an issue](https://github.com/A1-x-Tech/m
 </p>
 
 <p align="center">
-  Вы дочитали до конца!
+  You made it to the end!
 </p>
