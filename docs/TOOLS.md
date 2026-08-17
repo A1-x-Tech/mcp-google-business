@@ -1,5 +1,7 @@
 # Tools
 
+For task-oriented guidance, open the [MCP capability catalog](./capabilities/index.md). This page remains the technical reference for schemas and API responses.
+
 Google Business Profile is a read/write API served by **four hosts under one OAuth scope**
 (`business.manage`). The client routes each tool to its host; tools accept bare numeric ids
 (or full resource names) and the client builds whichever name scheme the endpoint wants —
