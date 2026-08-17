@@ -191,3 +191,13 @@ Google требует **и OAuth, и одобрение Basic API Access**.
 ## Поддержка
 
 Нашли ошибку или не хватает сценария? [Создайте issue](https://github.com/A1-x-Tech/mcp-google-business/issues) или напишите в [Telegram](https://t.me/a1_mcp).
+
+<br>
+
+<p align="center">
+  <img src="https://github.com/ztemerbekov/a1-yandex-kit-skills/raw/main/assets/images/mona-hifive-yandex-kit-warm.gif" alt="Две Моны дают пять" width="256">
+</p>
+
+<p align="center">
+  Вы дочитали до конца!
+</p>
