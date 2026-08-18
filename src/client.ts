@@ -1,5 +1,6 @@
 import type { ApiService, GoogleBusinessConfig } from "./types.js";
 import { GoogleBusinessError, isQuotaError } from "./types.js";
+import { CredentialsError } from "./config.js";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -250,10 +251,15 @@ export class GoogleBusinessClient {
    * The Bearer token for the next request: the static GOOGLE_BUSINESS_ACCESS_TOKEN
    * if configured, else a cached refresh-flow token (renewed 60 s before expiry;
    * concurrent callers share one in-flight refresh, and a failed refresh is not
-   * cached).
+   * cached). With neither configured, throws {@link CredentialsError} BEFORE any
+   * fetch — a missing setup must never enter the retry/backoff loop or hit the
+   * token endpoint, because no amount of retrying mints credentials.
    */
   private async getAccessToken(): Promise<string> {
     if (this.config.accessToken) return this.config.accessToken;
+    if (!this.config.clientId || !this.config.clientSecret || !this.config.refreshToken) {
+      throw new CredentialsError();
+    }
     if (this.tokenCache && Date.now() < this.tokenCache.expiresAt) return this.tokenCache.token;
     if (!this.tokenRefresh) {
       this.tokenRefresh = this.mintAccessToken()

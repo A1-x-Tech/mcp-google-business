@@ -21,11 +21,14 @@ npm run smoke      # live READ-ONLY call (needs real credentials)
 
 ## Architecture
 
-- `src/config.ts` — env → config; throws `ConfigError` (with a `reason` code) instead of
-  exiting, so `index.ts` can report the drop-off before dying. Accepts either the OAuth trio
-  (`GOOGLE_BUSINESS_CLIENT_ID`/`_CLIENT_SECRET`/`_REFRESH_TOKEN`) or
+- `src/config.ts` — env → config. Accepts either the OAuth trio
+  (`GOOGLE_BUSINESS_CLIENT_ID`/`_CLIENT_SECRET`/`_REFRESH_TOKEN`; a partial trio without an
+  access token throws `ConfigError` `incomplete_oauth_credentials`) or
   `GOOGLE_BUSINESS_ACCESS_TOKEN`; optional timeout/retries and four per-service base
-  overrides. `DEFAULT_BASES` (the host map) lives here.
+  overrides. `DEFAULT_BASES` (the host map) lives here. No credentials at all is NOT an
+  error: the fields stay `undefined` and the server starts degraded. Also home to
+  `CredentialsError` / `MISSING_CREDENTIALS_MESSAGE` (opens with the historical startup error
+  verbatim, then names the variables and the restart) and `hasCredentials()`.
 - `src/client.ts` — ALL HTTP: the `ApiService → host` routing
   (`accounts`/`businessinfo`/`performance`/`v4`), the OAuth2 token refresh with caching and
   in-flight dedupe, resource-name building (`bareAccountId`/`bareLocationId` accept bare ids
@@ -37,15 +40,33 @@ npm run smoke      # live READ-ONLY call (needs real credentials)
   `performance` (3), `reviews` (4), `posts` (4), `raw` (1) = 20 tools. `src/tools/util.ts` —
   `ok`/`fail`, the five annotation constants (`READ_ONLY`/`WRITE`/`CREATE`/`DESTRUCTIVE`/`RAW`)
   and the `isoDate`/`isoMonth` schema factories.
-- `src/index.ts` — wires every `register*` into the McpServer.
+- `src/index.ts` — wires every `register*` into the McpServer. `loadConfigOrDegraded()`
+  catches `ConfigError`, pings `startup_failed` (fire-and-forget) and degrades the config to
+  "no credentials"; an unconfigured start prepends `UNCONFIGURED_PREFIX` — plus
+  `Configuration problem: <message>` when a ConfigError was caught — to the initialize
+  `instructions`, and `oninitialized` sends `server_start` for a configured install or
+  `unconfigured_start` (with the reason) otherwise.
 - `src/telemetry.ts` — anonymous usage pings (ids/names/versions only, never data or
   arguments; fire-and-forget, must never block or throw; opt-out `ASKADS_TELEMETRY=0`).
-  `startup_failed` is the exception: `sendBlocking` awaits it. Its `reason` is a closed
-  vocabulary (`missing_credentials`, `incomplete_oauth_credentials`) — never a variable's
-  name or value.
+  `server_start` means "a usable install started"; `unconfigured_start` is a degraded start
+  and `startup_failed` a malformed config caught at load — both carry a `reason` from a
+  closed vocabulary (`missing_credentials`, `incomplete_oauth_credentials`) — never a
+  variable's name or value.
 
 ## Conventions (do not break)
 
+- **Never exit because of configuration.** A server that dies before the MCP handshake leaves
+  the user with a red cross and no reason — telemetry across this line of servers showed that
+  state accounted for nearly every unconfigured install, and almost none of them recovered.
+  Missing credentials are a survivable state: start, answer initialize (with the unconfigured
+  prefix in `instructions`) and tools/list, and let the first tool call fail with
+  `CredentialsError` — its message names the variables to set and says to restart, because
+  credentials come only from the environment. `config.test.ts`, `client.test.ts` and
+  `test/dist-smoke.test.js` pin this.
+- **Credential failures are not transport failures.** `CredentialsError` is thrown in
+  `getAccessToken()` before the token mint, the retry/backoff loop and the fetch — retrying
+  it burns seconds of backoff before the user sees the one message that helps. Pinned by a
+  "fetch must not be called" assertion in `client.test.ts`.
 - **Write API discipline.** Every tool carries one of the pinned annotation constants;
   `annotations.test.ts` pins the full tool → hints map. 5xx/network retries are gated to
   idempotent methods (everything except POST) — a replayed POST duplicates the resource.

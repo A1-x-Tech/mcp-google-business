@@ -43,8 +43,10 @@ a no-network tools/call). Put a `*.test.ts` next to the code it covers;
 ## Usage telemetry
 
 The server sends anonymous events to `usage.gistrec.cloud` (`server_start` when a client
-connects and `tool_call` with the tool **name**) to count active installs and tool demand.
-An event contains only impersonal technical fields: a random install id
+connects to a configured install, `unconfigured_start` when a client connects to a server
+without credentials, `tool_call` with the tool **name**, and `startup_failed` with a
+fixed-vocabulary reason code when the configuration is malformed) to count active installs
+and tool demand. An event contains only impersonal technical fields: a random install id
 (`~/.config/mcp-google-business/instance-id`), the package version, the AI client's name and
 version from the MCP handshake, the Node.js version and the OS.
 

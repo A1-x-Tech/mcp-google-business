@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { ConfigError, DEFAULT_BASES, loadConfig } from "./config.js";
+import { ConfigError, DEFAULT_BASES, hasCredentials, loadConfig } from "./config.js";
 
 /** Every variable loadConfig reads — cleared before each case for determinism. */
 const ALL_VARS = [
@@ -51,8 +51,40 @@ function reasonOf(vars: Record<string, string | undefined>): string {
   return caught.reason;
 }
 
-test("no credentials at all reports missing_credentials", () => {
-  assert.equal(reasonOf({}), "missing_credentials");
+/**
+ * Missing credentials used to throw here, which killed the process before the
+ * MCP handshake and left the user with a dead server and no reason. It is now
+ * a survivable state: the server starts degraded and the client raises
+ * CredentialsError on the first call instead (pinned in client.test.ts).
+ * Reverting this would restore that dead end.
+ */
+test("no credentials at all is not an error — the config loads with empty fields", () => {
+  withEnv({}, () => {
+    const config = loadConfig();
+    assert.equal(config.clientId, undefined);
+    assert.equal(config.clientSecret, undefined);
+    assert.equal(config.refreshToken, undefined);
+    assert.equal(config.accessToken, undefined);
+    assert.deepEqual(config.apiBases, DEFAULT_BASES);
+    assert.equal(hasCredentials(config), false);
+  });
+});
+
+test("empty strings read as absent — not as an incomplete trio", () => {
+  withEnv(
+    {
+      GOOGLE_BUSINESS_CLIENT_ID: "",
+      GOOGLE_BUSINESS_CLIENT_SECRET: "",
+      GOOGLE_BUSINESS_REFRESH_TOKEN: "",
+      GOOGLE_BUSINESS_ACCESS_TOKEN: "",
+    },
+    () => {
+      const config = loadConfig();
+      assert.equal(config.clientId, undefined);
+      assert.equal(config.accessToken, undefined);
+      assert.equal(hasCredentials(config), false);
+    },
+  );
 });
 
 test("a partial OAuth trio reports incomplete_oauth_credentials", () => {
@@ -76,13 +108,16 @@ test("the full OAuth trio loads without throwing", () => {
       assert.deepEqual(config.apiBases, DEFAULT_BASES);
       assert.equal(config.timeoutMs, 60_000);
       assert.equal(config.maxRetries, 3);
+      assert.equal(hasCredentials(config), true);
     },
   );
 });
 
 test("a static access token alone is a valid config", () => {
   withEnv({ GOOGLE_BUSINESS_ACCESS_TOKEN: "tok" }, () => {
-    assert.equal(loadConfig().accessToken, "tok");
+    const config = loadConfig();
+    assert.equal(config.accessToken, "tok");
+    assert.equal(hasCredentials(config), true);
   });
 });
 
