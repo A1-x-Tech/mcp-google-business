@@ -61,7 +61,7 @@ You need Node.js 20+, a verified Google Business Profile, a Google Cloud OAuth c
 
 <br>
 
-In **Settings → Plugins → MCP servers**, choose **Add server**, then add `npx -y mcp-google-business@latest` with `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET` and `GOOGLE_BUSINESS_REFRESH_TOKEN`.
+In **Settings → MCP servers**, select **Add server**, choose **STDIO**, enter the command `npx -y mcp-google-business@latest` and environment variables `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`, `GOOGLE_BUSINESS_REFRESH_TOKEN`, then select **Save** and **Restart**.
 
 ```bash
 codex mcp add google-business \
@@ -98,13 +98,17 @@ claude mcp list
 
 <br>
 
-Open **Settings → Developer → Edit Config** and add:
+The current official path is **Settings → Extensions**. For a custom desktop extension, open **Advanced settings → Extension Developer → Install Extension…**, select a `.mcpb` file and follow the prompts.
+
+This repository currently publishes an npm stdio package and does not contain a `.mcpb` bundle. For Claude Desktop builds that still support local configuration, use the following JSON stdio configuration as a fallback:
 
 ```json
 {"mcpServers":{"google-business":{"command":"npx","args":["-y","mcp-google-business@latest"],"env":{"GOOGLE_BUSINESS_CLIENT_ID":"your_client_id","GOOGLE_BUSINESS_CLIENT_SECRET":"your_client_secret","GOOGLE_BUSINESS_REFRESH_TOKEN":"your_refresh_token"}}}}
 ```
 
-If **Edit Config** is unavailable, edit `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows. [Claude Desktop MCP documentation](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
+In those builds, save it to `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows.
+
+[Claude Desktop MCP documentation](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
 
 </details>
 

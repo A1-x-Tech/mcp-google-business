@@ -61,7 +61,7 @@
 
 <br>
 
-В **Settings → Plugins → MCP servers** выберите **Add server**, затем добавьте `npx -y mcp-google-business@latest` с `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET` и `GOOGLE_BUSINESS_REFRESH_TOKEN`.
+В **Settings → MCP servers** нажмите **Add server**, выберите **STDIO**, укажите команду `npx -y mcp-google-business@latest` и переменные окружения `GOOGLE_BUSINESS_CLIENT_ID`, `GOOGLE_BUSINESS_CLIENT_SECRET`, `GOOGLE_BUSINESS_REFRESH_TOKEN`, затем нажмите **Save**, потом **Restart**.
 
 ```bash
 codex mcp add google-business \
@@ -98,13 +98,17 @@ claude mcp list
 
 <br>
 
-Откройте **Settings → Developer → Edit Config** и добавьте:
+Актуальный официальный путь — **Settings → Extensions**. Для пользовательского desktop extension откройте **Advanced settings → Extension Developer → Install Extension…**, выберите файл `.mcpb` и следуйте подсказкам.
+
+Этот репозиторий сейчас публикует npm-пакет со stdio и пока не содержит `.mcpb`. Поэтому используйте приведённый ниже JSON stdio-конфиг как fallback только в сборках Claude Desktop, где ещё поддерживается локальная конфигурация:
 
 ```json
 {"mcpServers":{"google-business":{"command":"npx","args":["-y","mcp-google-business@latest"],"env":{"GOOGLE_BUSINESS_CLIENT_ID":"your_client_id","GOOGLE_BUSINESS_CLIENT_SECRET":"your_client_secret","GOOGLE_BUSINESS_REFRESH_TOKEN":"your_refresh_token"}}}}
 ```
 
-Если **Edit Config** недоступна, отредактируйте `~/Library/Application Support/Claude/claude_desktop_config.json` на macOS или `%APPDATA%\Claude\claude_desktop_config.json` на Windows. [Документация Claude Desktop MCP](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
+В таких сборках сохраните его в `~/Library/Application Support/Claude/claude_desktop_config.json` на macOS или `%APPDATA%\Claude\claude_desktop_config.json` на Windows.
+
+[Документация Claude Desktop MCP](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
 
 </details>
 
