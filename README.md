@@ -3,8 +3,8 @@
 **English** | [Русский](./README.ru.md)
 
 [![npm](https://img.shields.io/npm/v/mcp-google-business)](https://www.npmjs.com/package/mcp-google-business)
-[![CI](https://github.com/A1-x-Tech/mcp-google-business/actions/workflows/ci.yml/badge.svg)](https://github.com/A1-x-Tech/mcp-google-business/actions/workflows/ci.yml)
 [![Glama](https://glama.ai/mcp/servers/A1-x-Tech/mcp-google-business/badges/score.svg)](https://glama.ai/mcp/servers/A1-x-Tech/mcp-google-business)
+[![CI](https://github.com/A1-x-Tech/mcp-google-business/actions/workflows/ci.yml/badge.svg)](https://github.com/A1-x-Tech/mcp-google-business/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 **A1 Google Business Profile MCP** lets an AI app work with your Google Business Profile locations in natural language. Inspect locations and performance, respond to reviews, prepare local posts and update profile information deliberately.
