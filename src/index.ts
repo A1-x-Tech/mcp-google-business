@@ -12,6 +12,7 @@ import { registerPerformanceTools } from "./tools/performance.js";
 import { registerReviewTools } from "./tools/reviews.js";
 import { registerPostTools } from "./tools/posts.js";
 import { registerRawTool } from "./tools/raw.js";
+import { authUnconfiguredPrefix, hasAuthToken, registerAuthTools } from "./tools/auth.js";
 
 /**
  * Server instructions: the `initialize` result's prose, and the only text the
@@ -42,14 +43,6 @@ const INSTRUCTIONS =
  * rather than with a failed call. There is no in-chat login here: credentials
  * come only from the environment, so the fix is an operator action + restart.
  */
-const UNCONFIGURED_PREFIX =
-  "ATTENTION: Google Business Profile is not connected yet — no credentials are configured, so " +
-  "every tool call will fail. The operator must set GOOGLE_BUSINESS_CLIENT_ID + " +
-  "GOOGLE_BUSINESS_CLIENT_SECRET + GOOGLE_BUSINESS_REFRESH_TOKEN (OAuth2 refresh flow; the " +
-  "README's \"Getting credentials\" section shows how to mint the refresh token via the OAuth " +
-  "2.0 Playground), or GOOGLE_BUSINESS_ACCESS_TOKEN with a short-lived access token, in the " +
-  "MCP client's server config and restart this server — the variables are read only at " +
-  "startup. ";
 
 /** Reads the package version so the server reports its real version to MCP clients. */
 function readVersion(): string {
@@ -100,11 +93,10 @@ async function main(): Promise<void> {
   // config can be reported; wired to the server before tools register.
   const telemetry = new Telemetry(readVersion());
   const { config, problem } = loadConfigOrDegraded(telemetry);
-  const client = new GoogleBusinessClient(config);
 
   // Decided once, at startup: credentials come only from the environment, so
   // "restart after setting the variables" is the accurate advice to give.
-  const connected = hasCredentials(config);
+  const connected = hasCredentials(config) || hasAuthToken();
 
   const server = new McpServer(
     {
@@ -114,7 +106,7 @@ async function main(): Promise<void> {
     {
       instructions: connected
         ? INSTRUCTIONS
-        : UNCONFIGURED_PREFIX + (problem ? `Configuration problem: ${problem.message} ` : "") + INSTRUCTIONS,
+        : authUnconfiguredPrefix() + (problem ? `Configuration problem: ${problem.message} ` : "") + INSTRUCTIONS,
     },
   );
 
@@ -126,6 +118,12 @@ async function main(): Promise<void> {
     if (connected) telemetry.send("server_start");
     else telemetry.send("unconfigured_start", { reason: problem?.reason ?? "missing_credentials" });
   };
+
+  // The auth tools come first so their TokenProvider exists before the client:
+  // the client falls back to it whenever the environment carries no
+  // credentials (env always wins — component invariant 3).
+  const tokenProvider = registerAuthTools(server);
+  const client = new GoogleBusinessClient(config, tokenProvider);
 
   registerAccountTools(server, client);
   registerLocationTools(server, client);

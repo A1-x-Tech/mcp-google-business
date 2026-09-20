@@ -8,13 +8,13 @@
     "url": "https://github.com/A1-x-Tech/mcp-google-business",
     "source": "github"
   },
-  "version": "1.1.0",
+  "version": "1.2.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "mcp-google-business",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "transport": {
         "type": "stdio"
       },
@@ -22,19 +22,19 @@
         {
           "name": "GOOGLE_BUSINESS_CLIENT_ID",
           "description": "OAuth2 client id from Google Cloud Console (refresh flow).",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": false
         },
         {
           "name": "GOOGLE_BUSINESS_CLIENT_SECRET",
           "description": "OAuth2 client secret. Treat it as a secret.",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": true
         },
         {
           "name": "GOOGLE_BUSINESS_REFRESH_TOKEN",
           "description": "OAuth2 refresh token with the business.manage scope. Treat it as a secret.",
-          "isRequired": true,
+          "isRequired": false,
           "isSecret": true
         },
         {
@@ -54,6 +54,12 @@
           "description": "Retries on transient errors (429 always; 5xx/network on idempotent calls).",
           "isRequired": false,
           "default": "3"
+        },
+        {
+          "name": "GOOGLE_BUSINESS_OAUTH_PORT",
+          "description": "Fixed port for the loopback listener of the in-chat login (127.0.0.1 + PKCE). Set it when the client runs over SSH port forwarding; otherwise a free port is picked per login.",
+          "isRequired": false,
+          "isSecret": false
         },
         {
           "name": "GOOGLE_BUSINESS_ACCOUNTS_API_BASE",

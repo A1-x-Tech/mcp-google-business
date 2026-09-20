@@ -1,6 +1,19 @@
 import type { ApiService, GoogleBusinessConfig } from "./types.js";
 import { GoogleBusinessError, isQuotaError } from "./types.js";
-import { CredentialsError } from "./config.js";
+import { CredentialsError, DEFAULT_BASES } from "./config.js";
+
+/**
+ * The slice of the auth component's TokenProvider this client consumes
+ * (structurally satisfied by `TokenProvider` from @a1-x-tech/mcp-google-auth).
+ * Kept as a local interface so the client stays testable with a plain object
+ * and never depends on the component's internals.
+ */
+export interface AccessTokenProvider {
+  /** A valid Bearer token; `true` forces a re-mint. */
+  getAccessToken(forceRefresh?: boolean): Promise<string>;
+  /** True when a re-mint is worth trying (a refresh token exists). */
+  canRefresh(): boolean;
+}
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -179,7 +192,16 @@ export class GoogleBusinessClient {
   /** In-flight refresh, so concurrent requests share one token call. */
   private tokenRefresh?: Promise<string>;
 
-  constructor(private readonly config: GoogleBusinessConfig) {
+  constructor(
+    private readonly config: GoogleBusinessConfig,
+    /**
+     * Fallback token source (the in-chat login of @a1-x-tech/mcp-google-auth).
+     * Consulted only when the env-derived config carries no credentials —
+     * env wins (component invariant 3), so existing refresh-triple and
+     * access-token installs behave exactly as before.
+     */
+    private readonly tokenProvider?: AccessTokenProvider,
+  ) {
     this.bases = Object.fromEntries(
       Object.entries(config.apiBases).map(([k, v]) => [k, v.endsWith("/") ? v : v + "/"]),
     ) as Record<ApiService, string>;
@@ -258,6 +280,10 @@ export class GoogleBusinessClient {
   private async getAccessToken(): Promise<string> {
     if (this.config.accessToken) return this.config.accessToken;
     if (!this.config.clientId || !this.config.clientSecret || !this.config.refreshToken) {
+      // The in-chat login, when wired: it re-reads the stored credentials per
+      // call, so a finish_login taken mid-session works without a restart, and
+      // it raises AuthRequiredError before any fetch.
+      if (this.tokenProvider) return this.tokenProvider.getAccessToken();
       throw new CredentialsError();
     }
     if (this.tokenCache && Date.now() < this.tokenCache.expiresAt) return this.tokenCache.token;
@@ -583,4 +609,29 @@ function parseBody(text: string): unknown {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * One cheap Business Profile read, used to verify a fresh in-chat login against
+ * the API the server actually talks to. Standalone (not a client method)
+ * because it runs with a token the client does not hold yet — the login is
+ * still being finished. Throws GoogleBusinessError exactly like the client
+ * does, so the caller can recognize a disabled-API 403 and give the actionable
+ * advice.
+ */
+export async function probeApi(accessToken: string): Promise<void> {
+  const base = (process.env.GOOGLE_BUSINESS_ACCOUNTS_API_BASE || DEFAULT_BASES.accounts).replace(/\/+$/, "");
+  const res = await fetch(`${base}/v1/accounts?pageSize=1`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(10_000),
+  });
+  const text = await res.text();
+  if (res.ok) return;
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = text;
+  }
+  throw new GoogleBusinessError(res.status, data);
 }

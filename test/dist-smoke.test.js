@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -9,11 +12,18 @@ import { GoogleBusinessClient } from "../dist/client.js";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 
+/**
+ * Sorted, because every assertion compares it against a sorted tool list. The
+ * six onboarding tools come from @a1-x-tech/mcp-google-auth, so this list is
+ * also the check that the component is wired into the published binary.
+ */
 const ALL_TOOLS = [
+  "auth_status",
   "create_local_post",
   "delete_local_post",
   "delete_review_reply",
   "fetch_multi_daily_metrics",
+  "finish_login",
   "get_daily_metrics",
   "get_location",
   "get_review",
@@ -24,22 +34,40 @@ const ALL_TOOLS = [
   "list_locations",
   "list_reviews",
   "list_search_keyword_impressions",
+  "logout",
   "raw_request",
   "reply_to_review",
   "search_chains",
+  "set_client",
+  "setup_instructions",
+  "start_login",
   "update_local_post",
   "update_location",
   "update_location_attributes",
 ];
 
+/**
+ * A throwaway $XDG_CONFIG_HOME for the spawned server. The auth component
+ * re-reads $XDG_CONFIG_HOME/mcp-google-business/credentials.json per call, so
+ * without this a real login on the developer's machine would make the
+ * "unconfigured" case pass for the wrong reason.
+ */
+function isolatedConfigDir(t) {
+  const dir = mkdtempSync(join(tmpdir(), "mcp-business-dist-smoke-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  return dir;
+}
+
+
 /** Spawns the built dist/index.js binary and completes a real MCP handshake over stdio. */
-async function connectDist() {
+async function connectDist(t) {
   const env = {};
   for (const [k, v] of Object.entries(process.env)) {
     if (v !== undefined) env[k] = v;
   }
   env.GOOGLE_BUSINESS_ACCESS_TOKEN = "dist-smoke-token";
   env.ASKADS_TELEMETRY = "0";
+  env.XDG_CONFIG_HOME = isolatedConfigDir(t); // ignore any real login on this machine
 
   const transport = new StdioClientTransport({
     command: process.execPath,
@@ -53,8 +81,8 @@ async function connectDist() {
   return client;
 }
 
-test("dist binary completes the MCP handshake over stdio and lists all tools", async () => {
-  const client = await connectDist();
+test("dist binary completes the MCP handshake over stdio and lists all tools", async (t) => {
+  const client = await connectDist(t);
   try {
     const { tools } = await client.listTools();
     assert.deepEqual(tools.map((t) => t.name).sort(), ALL_TOOLS);
@@ -67,8 +95,8 @@ test("dist binary completes the MCP handshake over stdio and lists all tools", a
   }
 });
 
-test("dist binary reports server instructions in the initialize result", async () => {
-  const client = await connectDist();
+test("dist binary reports server instructions in the initialize result", async (t) => {
+  const client = await connectDist(t);
   try {
     // The instructions are the only prose the calling model gets before it picks
     // a tool — they must survive the build and reach the handshake.
@@ -80,8 +108,8 @@ test("dist binary reports server instructions in the initialize result", async (
   }
 });
 
-test("dist binary serves a tools/call end to end (SSRF guard, no network needed)", async () => {
-  const client = await connectDist();
+test("dist binary serves a tools/call end to end (SSRF guard, no network needed)", async (t) => {
+  const client = await connectDist(t);
   try {
     const res = await client.callTool({
       name: "raw_request",
@@ -126,12 +154,13 @@ test("dist client rejects foreign-origin paths before sending the Bearer token",
  * answer a tool call with the actionable error — offline: the CredentialsError
  * fires before any fetch, so this test never touches the network.
  */
-test("dist binary starts without credentials: handshake, tool list, actionable call error", async () => {
+test("dist binary starts without credentials: handshake, tool list, actionable call error", async (t) => {
   const env = {};
   for (const [k, v] of Object.entries(process.env)) {
     if (v !== undefined && !k.startsWith("GOOGLE_BUSINESS_")) env[k] = v;
   }
   env.ASKADS_TELEMETRY = "0"; // keep the suite offline
+  env.XDG_CONFIG_HOME = isolatedConfigDir(t); // ignore any real login on this machine
 
   const transport = new StdioClientTransport({
     command: process.execPath,
@@ -145,7 +174,8 @@ test("dist binary starts without credentials: handshake, tool list, actionable c
   try {
     // The model must read the fix before it picks a tool.
     const instructions = client.getInstructions() ?? "";
-    assert.match(instructions, /not connected/);
+    assert.match(instructions, /NOT CONNECTED/);
+    assert.match(instructions, /start_login/);
     assert.match(instructions, /GOOGLE_BUSINESS_CLIENT_ID/);
     assert.match(instructions, /restart/);
 
@@ -156,7 +186,8 @@ test("dist binary starts without credentials: handshake, tool list, actionable c
     const result = await client.callTool({ name: "list_accounts", arguments: {} });
     assert.equal(result.isError, true);
     const text = result.content.map((c) => c.text ?? "").join(" ");
-    assert.match(text, /Google Business credentials are required: set GOOGLE_BUSINESS_CLIENT_ID/);
+    assert.match(text, /not connected/i);
+    assert.match(text, /start_login/);
     assert.match(text, /restart the server/);
   } finally {
     await client.close();
