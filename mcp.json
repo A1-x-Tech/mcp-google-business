@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "google-business": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-google-business@latest"
+      ],
+      "env": {
+        "GOOGLE_BUSINESS_CLIENT_ID": "${GOOGLE_BUSINESS_CLIENT_ID}",
+        "GOOGLE_BUSINESS_CLIENT_SECRET": "${GOOGLE_BUSINESS_CLIENT_SECRET}",
+        "GOOGLE_BUSINESS_REFRESH_TOKEN": "${GOOGLE_BUSINESS_REFRESH_TOKEN}"
+      }
+    }
+  }
+}
