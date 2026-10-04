@@ -1,0 +1,25 @@
+{
+  "name": "mcp-google-business",
+  "displayName": "A1 Google Business Profile MCP",
+  "description": "MCP server for Google Business Profile — review performance, reply to reviews and publish location updates from an AI app",
+  "author": {
+    "name": "Aleksandr Kovalko & Zinnur Temerbekov"
+  },
+  "homepage": "https://github.com/A1-x-Tech/mcp-google-business#readme",
+  "repository": "https://github.com/A1-x-Tech/mcp-google-business",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "google",
+    "google-business-profile",
+    "google-my-business",
+    "local-seo",
+    "reviews",
+    "local-posts",
+    "claude",
+    "cursor",
+    "codex"
+  ],
+  "logo": "assets/a1-logo.svg"
+}
