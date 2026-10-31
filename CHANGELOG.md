@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] — 2026-10-31
+
+### Fixed
+
+- Telemetry: when the error excerpt finds nothing, the server's own error classes
+  (`AuthRequiredError`, `AbortError`, …) send their class name, never the message; a plain `Error`
+  and system errors send nothing. Node errors with a `code`, `errno` or `syscall` send only their type
+  and code. Such failures used to arrive with no text.
+
 ## [1.3.0] — 2026-10-31
 
 ### Changed
@@ -115,6 +124,7 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 - CI (Node 20/22) and a daily read-only health check (skips when secrets are absent).
 
 [Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.3.0...HEAD
+[1.3.1]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.1
 [1.3.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.0
 [1.2.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.2.0
 [1.1.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.1.0
