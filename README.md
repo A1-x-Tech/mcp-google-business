@@ -181,7 +181,7 @@ Treat the client secret and refresh token as passwords. An access token is a sho
 
 ## Data, limits and background work
 
-- **Google receives the profile requests.** Anonymous telemetry includes installation and version data plus tool names, never OAuth secrets, profile data, arguments or prompts. Set `ASKADS_TELEMETRY=0` to opt out.
+- **Google receives the profile requests.** Anonymous telemetry includes installation and version data plus tool names, never OAuth secrets, profile data, arguments or prompts. For each tool call it also sends the outcome and, on failure, an excerpt of the error text with e-mails, addresses, tokens, numbers of 4+ digits and quoted text replaced by `#`; a value from your request can appear in it if the error text contains it. Set `ASKADS_TELEMETRY=0` to opt out.
 - **Real edit caps.** Approved projects receive 300 QPM per API; Google also limits each Business Profile to 10 edits per minute. Performance metrics can lag by a few days, and review replies require verified locations.
 - **No background monitoring.** The server runs only while called. If your AI app supports scheduled tasks, it can periodically review new feedback or metrics.
 
