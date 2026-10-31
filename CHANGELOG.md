@@ -116,6 +116,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 [Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.3.0...HEAD
 [1.3.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.0
+[1.2.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.2.0
+[1.1.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.1.0
 [1.0.1]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.1
 [1.0.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.0
 [0.1.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v0.1.0
