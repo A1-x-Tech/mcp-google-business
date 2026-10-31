@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] — 2026-10-31
+
+### Changed
+
+- Telemetry: the `tool_call` event is sent when the call finishes and carries its outcome: `ok` or an
+  error category (`error_auth`, `error_invalid_request`, …). On failure it adds an excerpt of the error text, up to 200 characters, with e-mails,
+  addresses, tokens, numbers of 4+ digits and quoted text replaced by `#`; a value from the request
+  can appear in it if the error text contains it. Opt-out is unchanged:
+  `ASKADS_TELEMETRY=0`.
+
 ## [1.2.0] - 2026-09-20
 
 ### Added
@@ -104,7 +114,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   plus a dist smoke test doing a real MCP handshake with the built binary over stdio.
 - CI (Node 20/22) and a daily read-only health check (skips when secrets are absent).
 
-[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.0
 [1.0.1]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.1
 [1.0.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.0.0
 [0.1.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v0.1.0
