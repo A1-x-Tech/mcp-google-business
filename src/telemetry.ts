@@ -167,10 +167,10 @@ const OUTCOME_PATTERNS: ReadonlyArray<readonly [ToolOutcome, RegExp]> = [
   ["error_timeout", /timed?[ _-]?out|таймаут|ETIMEDOUT|AbortError|не был готов|not ready/i],
   ["error_network", /ECONNRESET|ECONNREFUSED|ENOTFOUND|EAI_AGAIN|EPIPE|fetch failed|socket hang up/i],
   ["error_rate_limit", /\b429\b|rate[ _-]?limit|too many requests|quota|квот|лимит|\[(?:56|152|506|9000)\]/i],
-  ["error_permission", /нет доступа к кабинету|не подключ[её]н к аккаунту/i],
+  ["error_permission", /нет доступа к кабинету|не подключ[её]н к аккаунту|accessNotConfigured|SERVICE_DISABLED/i],
   [
     "error_auth",
-    /\b401\b|unauthori[sz]ed|unauthenticated|invalid[ _-]?(?:token|grant|credentials)|token (?:expired|revoked)|login required|AuthRequired|авториз|не подключ|\[53\]/i,
+    /\b401\b|unauthori[sz]ed|unauthenticated|invalid[ _-]?(?:token|grant|credentials)|token (?:expired|revoked)|login required|AuthRequired|OAuthError|авториз|не подключ|\[53\]/i,
   ],
   ["error_permission", /\b403\b|forbidden|access[ _-]?denied|permission|insufficient[ _-]?scope|нет доступа|\[(?:54|3228)\]/i],
   ["error_not_found", /\b404\b|not[ _-]?found|не найден|не существует|\[8800\]/i],
@@ -282,6 +282,9 @@ function jsBug(err: unknown): string | undefined {
  */
 function errorText(err: unknown): string | undefined {
   if (!(err instanceof Error) || "errno" in err || "syscall" in err) return undefined;
+  // OAuthError's code is a fixed OAuth/Google vocabulary (invalid_grant, accessNotConfigured), not user data.
+  const code: unknown = (err as { code?: unknown }).code;
+  if (err.name === "OAuthError" && typeof code === "string" && /^[A-Za-z_]{2,40}$/.test(code)) return `OAuthError ${code}`;
   return /^[A-Z][A-Za-z0-9]*(?:Error|Exception)$/.test(err.name) && err.name !== "Error" ? err.name : undefined;
 }
 

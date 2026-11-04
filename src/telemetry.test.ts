@@ -684,3 +684,27 @@ test("a Node error with a code or system fields sends its type and code, never t
   ]);
   assert.ok(!JSON.stringify(sent).includes("Иван"));
 });
+
+test("login-tool failures: OAuthError sends its fixed code, a refusal arrives as local", async () => {
+  const { OAuthError } = await import("@a1-x-tech/mcp-google-auth");
+  const { AUTH_OPTIONS } = await import("./tools/auth.js");
+  const { mcp, sent } = await pairWith((server) => {
+    server.registerTool("grant", { description: "g", inputSchema: {} }, async () =>
+      AUTH_OPTIONS.fail!(new OAuthError("invalid_grant", "Token has been expired or revoked for ivan@example.com")),
+    );
+    server.registerTool("api_off", { description: "a", inputSchema: {} }, async () =>
+      AUTH_OPTIONS.fail!(new OAuthError("accessNotConfigured", "Some API", 403)),
+    );
+    server.registerTool("refusal", { description: "r", inputSchema: {} }, async () =>
+      AUTH_OPTIONS.fail!("No client file at the given path"),
+    );
+  });
+  for (const name of ["grant", "api_off", "refusal"]) await mcp.callTool({ name, arguments: {} });
+  const calls = sent.filter((s) => s.body.event === "tool_call").map((s) => [s.body.reason, s.body.error_detail]);
+  assert.deepEqual(calls, [
+    ["error_auth", "OAuthError invalid_grant"],
+    ["error_permission", "OAuthError accessNotConfigured"],
+    ["error_invalid_request", "local: No client file at the given path"],
+  ]);
+  assert.doesNotMatch(JSON.stringify(calls), /ivan|example\.com/);
+});

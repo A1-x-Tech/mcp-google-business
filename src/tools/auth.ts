@@ -9,6 +9,7 @@ import {
 } from "@a1-x-tech/mcp-google-auth";
 import { probeApi } from "../client.js";
 import { GoogleBusinessError } from "../types.js";
+import { fail } from "./util.js";
 
 /**
  * The scopes an in-chat login requests (the per-task table lives in
@@ -100,6 +101,8 @@ export const AUTH_OPTIONS: GoogleAuthOptions = {
   envPrefix: "GOOGLE_BUSINESS",
   scopes: LOGIN_SCOPES,
   verifyIdentity,
+  // Login-tool failures go through the server's own renderer, so telemetry gets their origin.
+  fail,
 };
 
 /**
