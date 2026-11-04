@@ -7,6 +7,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.3.2] — 2026-11-05
+
 ### Fixed
 
 - Telemetry: failures of the login tools (`start_login`, `finish_login`, `set_client`, …) now carry
@@ -133,7 +135,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
   plus a dist smoke test doing a real MCP handshake with the built binary over stdio.
 - CI (Node 20/22) and a daily read-only health check (skips when secrets are absent).
 
-[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/A1-x-Tech/mcp-google-business/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.2
 [1.3.1]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.1
 [1.3.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.3.0
 [1.2.0]: https://github.com/A1-x-Tech/mcp-google-business/releases/tag/v1.2.0
